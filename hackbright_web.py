@@ -11,13 +11,20 @@ app = Flask(__name__)
 def get_student():
     """Show information about a student."""
 
-    github = request.args.get('github')
+    github = request.args.get('github', 'NA')
 
-    first, last, github = hackbright.get_student_by_github(github)
+    if github != 'NA':
+        first, last, github = hackbright.get_student_by_github(github)
+        projects = hackbright.get_grades_by_github(github)
 
-    # return "{} is the GitHub account for {} {}".format(github, first, last)
-    return render_template('student_info.html', first=first, last=last, github=github)
+        print("projects:")
+        print(projects)
 
+        # return "{} is the GitHub account for {} {}".format(github, first, last)
+        return render_template('student_info.html', 
+            first=first, last=last, github=github, projects=projects)
+    else:
+        return 'Student not found'
 
 @app.route("/student-search")
 def get_student_form():
@@ -40,7 +47,16 @@ def student_add():
     hackbright.make_new_student(fname, lname, github)
 
     return render_template("successful_add.html", first=fname, last=lname)
+
+@app.route("/project")
+def get_project():
+    """Show information about a project."""
+
+    title = request.args.get('title', 'NA')
+    project_info = hackbright.get_project_by_title(title)
     
+    return render_template('project_info.html', element=project_info)
+            
 
 if __name__ == "__main__":
     hackbright.connect_to_db(app)
